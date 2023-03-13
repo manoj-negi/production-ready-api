@@ -16,7 +16,7 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) SetupRouter() {
-	fmt.Println("here we go")
+	fmt.Println("setting up Routes")
 
 	h.Router = mux.NewRouter()
 
