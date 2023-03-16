@@ -2,30 +2,39 @@ package database
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"log"
+
+	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func NewDatabase() (*gorm.DB, error) {
 
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbDatabaseName := os.Getenv("DB_DATABASE_NAME")
-	dbPort := os.Getenv("DB_PORT")
+	viper.SetConfigFile("../../.env")
+	viper.ReadInConfig()
 
-	// dbConnectionString := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + strconv.Itoa(dbPort) + ")/" + dbDatabaseName
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", dbHost, dbPort, dbUsername, dbDatabaseName, dbPassword)
-	fmt.Println(connectionString)
+	log.Println(viper.Get("DB_USERNAME"))
 
-	db, err := gorm.Open("postgres", connectionString)
+	dbUsername := viper.Get("DB_USERNAME")
+	dbPassword := viper.Get("DB_PASSWORD")
+	dbHost := viper.Get("DB_HOST")
+	dbDatabaseName := viper.Get("DB_DATABASE_NAME")
+	dbPort := viper.Get("DB_PORT")
+
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", dbHost, dbPort, dbUsername, dbDatabaseName, dbPassword)
+
+	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		return db, err
 	}
 
-	if err := db.DB().Ping(); err != nil {
+	postgresDb, err := db.DB()
+	if err != nil {
+		return db, err
+	}
+	if err := postgresDb.Ping(); err != nil {
 		return db, err
 	}
 
