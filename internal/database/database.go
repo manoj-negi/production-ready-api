@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-
 	"log"
+	"os"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
@@ -12,18 +12,24 @@ import (
 
 func NewDatabase() (*gorm.DB, error) {
 
-	viper.SetConfigFile("../../.env")
-	viper.ReadInConfig()
+	viper.AddConfigPath(".")
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
 
-	log.Println(viper.Get("DB_USERNAME"))
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
 
-	dbUsername := viper.Get("DB_USERNAME")
-	dbPassword := viper.Get("DB_PASSWORD")
-	dbHost := viper.Get("DB_HOST")
-	dbDatabaseName := viper.Get("DB_DATABASE_NAME")
-	dbPort := viper.Get("DB_PORT")
+	dbUsername := os.Getenv("DB_USERNAME")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbDatabaseName := os.Getenv("DB_DATABASE_NAME")
+	dbPort := os.Getenv("DB_PORT")
 
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", dbHost, dbPort, dbUsername, dbDatabaseName, dbPassword)
+
+	log.Println("---connectionString-----", connectionString)
 
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {

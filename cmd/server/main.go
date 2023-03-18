@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/manoj-negi/production-ready-api/internal/database"
 	transportHttp "github.com/manoj-negi/production-ready-api/internal/transport/http"
 )
 
@@ -11,7 +12,14 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	fmt.Println("setting up our apps")
+
+	var err error
+
+	_, err = database.NewDatabase()
+
+	if err != nil {
+		return err
+	}
 
 	handler := transportHttp.NewHandler()
 	handler.SetupRouter()
@@ -25,7 +33,6 @@ func (app *App) Run() error {
 }
 
 func main() {
-	fmt.Println("----start-")
 
 	app := App{}
 
