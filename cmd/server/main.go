@@ -15,14 +15,16 @@ func (app *App) Run() error {
 
 	var err error
 
-	_, err = database.NewDatabase()
+	store, err := database.NewDatabase()
 
 	if err != nil {
 		fmt.Println("Failed to connect", err)
 		return err
 	}
 
-	if err := d
+	if err := store.MigrateDB(); err != nil {
+		fmt.Println("failel to migrate", err)
+	}
 
 	handler := transportHttp.NewHandler()
 	handler.SetupRouter()
