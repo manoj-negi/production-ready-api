@@ -18,8 +18,11 @@ func (app *App) Run() error {
 	_, err = database.NewDatabase()
 
 	if err != nil {
+		fmt.Println("Failed to connect", err)
 		return err
 	}
+
+	if err := d
 
 	handler := transportHttp.NewHandler()
 	handler.SetupRouter()
@@ -28,7 +31,7 @@ func (app *App) Run() error {
 		fmt.Println("Failed to setup server")
 		return err
 	}
-
+	fmt.Println("succesfully connected databse")
 	return nil
 }
 

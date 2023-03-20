@@ -1,49 +1,41 @@
 package database
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/spf13/viper"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
-func NewDatabase() (*gorm.DB, error) {
+type Database struct {
+	Client *sqlx.DB
+}
 
-	viper.AddConfigPath(".")
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+func NewDatabase() (*Database, error) {
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %w", err))
-	}
+	connectionString := fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USERNAME"),
+		os.Getenv("DB_DB"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("SSL_MODE"),
+	)
 
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbDatabaseName := os.Getenv("DB_DATABASE_NAME")
-	dbPort := os.Getenv("DB_PORT")
-
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", dbHost, dbPort, dbUsername, dbDatabaseName, dbPassword)
-
-	log.Println("---connectionString-----", connectionString)
-
-	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
+	dbConn, err := sqlx.Connect("postgres", connectionString)
 	if err != nil {
-		return db, err
+		return &Database{}, fmt.Errorf("could not connect to database: %w", err)
 	}
 
-	postgresDb, err := db.DB()
-	if err != nil {
-		return db, err
-	}
-	if err := postgresDb.Ping(); err != nil {
-		return db, err
-	}
+	return &Database{
+		Client: dbConn,
+	}, nil
 
-	return db, nil
+}
 
+func (d *Database) Ping(ctx context.Context) error {
+	return d.Client.DB.PingContext(ctx)
 }
