@@ -1,5 +1,8 @@
 version: '3'
 
+vars:
+    postgres_url: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable 
+
 tasks:
   build:
     cmds:
@@ -8,3 +11,7 @@ tasks:
   run:
     cmds:
       - docker-compose up --build
+
+  migrate:
+    cmds:
+      - migrate -database {{.postgres_url}}  -path migrations up    

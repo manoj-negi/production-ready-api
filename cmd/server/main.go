@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
+	"github.com/manoj-negi/production-ready-api/internal/comment"
 	"github.com/manoj-negi/production-ready-api/internal/database"
 	transportHttp "github.com/manoj-negi/production-ready-api/internal/transport/http"
 )
@@ -22,9 +24,16 @@ func (app *App) Run() error {
 		return err
 	}
 
-	if err := store.MigrateDB(); err != nil {
-		fmt.Println("failel to migrate", err)
-	}
+	cmtService := comment.NewService(store)
+
+	cmtService.PostComment(context.Background(), comment.Comment{
+		ID:     "0f87f266-a337-440f-a2fd-5a92acf6d8c0",
+		Slug:   "manual-test",
+		Author: "Sonam dubey",
+		Body:   "Hello World",
+	})
+
+	fmt.Println(cmtService.GetComment(context.Background(), "01fd02a5-1ace-48b5-8822-ee3795a7d6e9"))
 
 	handler := transportHttp.NewHandler()
 	handler.SetupRouter()
@@ -33,7 +42,7 @@ func (app *App) Run() error {
 		fmt.Println("Failed to setup server")
 		return err
 	}
-	fmt.Println("succesfully connected databse")
+	fmt.Println("succesfully connected databse", store)
 	return nil
 }
 
