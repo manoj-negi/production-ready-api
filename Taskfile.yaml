@@ -1,16 +1,20 @@
 version: '3'
 
 vars:
-    postgres_url: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable 
+    postgres_url: postgres://postgres:Post@123@localhost:5432/postgres?sslmode=disable 
 
 tasks:
   build:
     cmds:
       - go build -o app cmd/server/main.go
 
-  run:
+  dockerUp:
     cmds:
       - docker-compose up --build
+
+  dockerDown:
+    cmds:
+      - docker-compose down 
 
   migrate:
     cmds:
